@@ -16,6 +16,8 @@
 #include<netinet/in.h>
 #include<unistd.h>
 #include<errno.h>
+#include<signal.h>
+#include<sys/wait.h>
 
 #define SERV_PORT 9877
 #define MAXLINE 1024
@@ -60,6 +62,14 @@ again:
             perror("str_echo:read error");
 }
 
+void sig_child(int signo)
+{
+    pid_t pid;
+    int stat;
+
+    pid = wait(&stat);
+    printf("child %d terminated\n",pid);
+}
 
 int main(void)
 {
@@ -95,11 +105,22 @@ int main(void)
         exit(3);
     }
 
+    if(signal(SIGCHLD,sig_child) == SIG_ERR)//内核在任一进程终止时发给其父进程SIGHLD
+    {
+        perror("can not catch SIGHLD");
+    }
+
     while(1)
     {
         clilen = sizeof(cliaddr);
         
-        connfd = accept(listenfd,(struct sockaddr *)&cliaddr,&clilen);
+        if((connfd = accept(listenfd,(struct sockaddr *)&cliaddr,&clilen)) < 0)
+        {
+            if(errno == EINTR)
+                continue;
+            else
+                perror("client accept error");
+        }
         if(connfd < 0)
         {
             perror("server accept error");

@@ -38,7 +38,7 @@ int main(void)
         if(un.c[0] == 2&&un.c[1] == 1)
             printf("little-endian\n");
         if(un.c[0] == 1&&un.c[1] == 2)
-            printf("nig-endian\n");
+            printf("big-endian\n");
     }
     else
         printf("sizeof(short) = %ld\n",sizeof(short));
